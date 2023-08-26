@@ -21,6 +21,7 @@ export const SearchContext = (props: Props) => {
 
     const contextValue: any = {
         loading,
+        apiObjects,
         setLoading,
         isValidApi,
         setIsValidApi,

@@ -34,14 +34,13 @@ const Navigation = () => {
                     return response.json();
                 })
                 .then((data) => {
-                    console.log("data is ", data);
-
                     handleApiStateChange(data);
                     setLoading(false);
                     setIsValidApi(true);
                 })
                 .catch((err) => {
                     setIsValidApi(false);
+                    handleApiStateChange(null)
                     setLoading(false);
                     console.log("err", err);
                 });
@@ -86,7 +85,9 @@ const Navigation = () => {
 
     return (
         <>
-            <div className="w-screen flex flex-row items-center justify-between p-2">
+            <div className="w-screen flex flex-row items-center justify-between p-2" style={{
+                border: '1px solid #121b27'
+            }}>
                 <HeaderBar />
 
                 <div className="flex flex-row gap-2 items-center">

@@ -1,4 +1,4 @@
-import { Navigation } from "./components"
+import { Navigation, ViewPage } from "./components"
 
 function App() {
 
@@ -6,6 +6,7 @@ function App() {
     <>
       <div className="w-screen home">
         <Navigation />
+        <ViewPage />
       </div>
     </>
   )
