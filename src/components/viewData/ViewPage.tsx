@@ -8,47 +8,69 @@ const ViewPage = () => {
     const { isValidApi, apiObjects }: any = useSearchContext()
     const [apiData, setApiData]: any = useState([])
     const [loading, setLoading] = useState<Boolean>(false)
+    const [schemaError, setSchemaError] = useState<Boolean>(false)
 
-    const HandleApiDisplay = (schemaKey: any[], apiObjects: any): any[] => {
+    const HandleApiDisplay = (schemaKey: any[], hapiObjects: any): any => {
         setLoading(true)
         let populateSchemaValue = []
+        let apiObjects = hapiObjects
         let schemaHeaders = new Set(['imageKey', 'linkKey', 'others'])
 
+        if (schemaKey.some(key => key.includes('headers'))) {
+            let subHeader = schemaKey.filter(v => v.includes('headers'))[0].split('.')[1]
+            apiObjects = hapiObjects[subHeader]
+        }
 
-        if (schemaKey.length > 0) {
-            for (const value of apiObjects) {
-                let schemaValue = value
-                let predefinedSchema: any[] = []
+        let getText = schemaKey.filter(v => v.includes('headers'))[0]
+        let headersIdx = schemaKey.indexOf(getText)
+        schemaKey.splice(headersIdx, 1)
 
-                for (const key of schemaKey) {
-                    const keySplit = key.split('.')
-                    if (keySplit.length > 0 && schemaHeaders.has(keySplit[0])) {
-                        // others, imagekey, linkey
-                        if (keySplit[0] === 'others') {
-                            predefinedSchema.push(`${key}.${schemaValue[keySplit[1]]}`)
+        try {
+            if (schemaKey.length > 0) {
+                for (const value of apiObjects) {
+                    let schemaValue = value
+                    let predefinedSchema: any[] = []
+
+                    for (const key of schemaKey) {
+                        const keySplit = key.split('.')
+                        if (keySplit.length > 0 && schemaHeaders.has(keySplit[0])) {
+                            // others, imagekey, linkey
+                            if (keySplit[0] === 'others') {
+                                predefinedSchema.push(`${key}.${schemaValue[keySplit[1]]}`)
+                            }
+                            else predefinedSchema.push(`${keySplit[0]}.${schemaValue[keySplit[1]]}`)
                         }
-                        else predefinedSchema.push(`${keySplit[0]}.${schemaValue[keySplit[1]]}`)
+                        else {
+                            predefinedSchema.push(`${key}.${schemaValue[key]}`)
+                        }
                     }
-                    else {
-                        predefinedSchema.push(`${key}.${schemaValue[key]}`)
-                    }
+                    populateSchemaValue.push(predefinedSchema)
                 }
-                populateSchemaValue.push(predefinedSchema)
+
+            }
+            else {
+                for (const item of apiObjects) {
+                    let predefindeSchema: any[] = []
+                    for (const [key, value] of Object.entries(item)) {
+                        predefindeSchema.push(`${key}.${value}`)
+                    }
+                    populateSchemaValue.push(predefindeSchema)
+                }
             }
 
+            setLoading(false)
+            setSchemaError(false)
+            return populateSchemaValue
         }
-        else {
-            for (const item of apiObjects) {
-                let predefindeSchema: any[] = []
-                for (const [key, value] of Object.entries(item)) {
-                    predefindeSchema.push(`${key}.${value}`)
-                }
-                populateSchemaValue.push(predefindeSchema)
-            }
+        catch (err) {
+            console.log("error caught api schema could not decipher object")
+            // alert("put in a schema please!!!")
+            setSchemaError(true)
+            return []
         }
 
-        setLoading(false)
-        return populateSchemaValue
+        return null
+
 
     }
 
@@ -112,6 +134,7 @@ const ViewPage = () => {
                     Loading...
                 </span>
             </div>}
+            {Array.isArray(apiData) && apiData.length === 0 && schemaError && <div className="text-red-400 text-center font-semibold">could not get api due to schema creation error</div>}
             {apiObjects !== null && apiData.length > 0 && apiData.map((v: any, idx: any): any => <RenderViewPage id={idx} key={idx} view={v} />)}
         </div>
     </>
